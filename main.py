@@ -1,3 +1,5 @@
+#######
+
 import chainlit as cl
 import torch
 
@@ -20,10 +22,11 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain import hub
 
-text_splitter = RecursiveCharacterTextSplitter ( chunk_size =1000 ,
-chunk_overlap =100)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,
+                                               chunk_overlap=100)
 
-embedding = HuggingFaceEmbeddings ()
+embedding = HuggingFaceEmbeddings()
+
 
 def process_file(file: AskFileResponse):
     if file.type == "text/plain":
@@ -38,11 +41,13 @@ def process_file(file: AskFileResponse):
         doc.metadata["source"] = f"source_{i}"
     return docs
 
+
 def get_vector_db(file: AskFileResponse):
     docs = process_file(file)
     cl.user_session.set("docs", docs)
     vector_db = Chroma.from_documents(documents=docs, embedding=embedding)
     return vector_db
+
 
 def get_huggingface_llm(model_name: str = "lmsys/vicuna-7b-v1.5", max_new_token: int = 512):
     nf4_config = BitsAndBytesConfig(
@@ -72,6 +77,7 @@ def get_huggingface_llm(model_name: str = "lmsys/vicuna-7b-v1.5", max_new_token:
     )
     return llm
 
+
 LLM = get_huggingface_llm()
 
 
@@ -79,6 +85,7 @@ welcome_message = """Welcome to the PDF QA! To get started:
 1. Upload a PDF or text file
 2. Ask a question about the file
 """
+
 
 @cl.on_chat_start
 async def on_chat_start():
@@ -92,7 +99,8 @@ async def on_chat_start():
         ).send()
     file = files[0]
 
-    msg = cl.Message(content=f"Processing {file.name}...", disable_feedback=True)
+    msg = cl.Message(
+        content=f"Processing {file.name}...", disable_feedback=True)
     await msg.send()
 
     vector_db = await cl.make_async(get_vector_db)(file)
@@ -121,6 +129,7 @@ async def on_chat_start():
     await msg.update()
 
     cl.user_session.set("chain", chain)
+
 
 @cl.on_message
 async def on_message(message: cl.Message):
