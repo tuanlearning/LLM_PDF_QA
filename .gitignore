@@ -1,0 +1,6 @@
+#Ignore environment folder
+.chainlit/
+.files/
+llm_pdf_qa/
+#Ignore .ipynb files
+*.ipynb
